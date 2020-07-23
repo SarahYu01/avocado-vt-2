@@ -1,0 +1,33 @@
+language: python
+python:
+    - "2.7"
+    - "3.4"
+
+matrix:
+  allow_failures:
+    - python: "3.4"
+
+sudo: false
+
+install:
+    - pip install Sphinx==1.3b1
+    - pip install -r requirements-travis.txt
+    - git clone --depth 1 https://github.com/avocado-framework/avocado.git --branch $([ $TRAVIS_PYTHON_VERSION == "2.7" ] && echo 69lts || echo master) avocado-libs
+    - cd avocado-libs
+    - pip install -e .
+    - cd ..
+    - pip install -e .
+
+script:
+    # Create some fake binaries to make vt-bootstrap happy
+    - mkdir -p /tmp/dummy_bin
+    - touch /tmp/dummy_bin/arping
+    - touch /tmp/dummy_bin/tcpdump
+    - chmod 777 /tmp/dummy_bin/*
+    - export PATH="/tmp/dummy_bin:$PATH"
+    # Setup Avocado-vt for functional tests
+    - AVOCADO_LOG_DEBUG=yes avocado vt-bootstrap --vt-skip-verify-download-assets --yes-to-all
+    # Run tests
+    - inspekt checkall --disable-lint W,R,C,E1002,E1101,E1103,E1120,F0401,I0011,E1003,W605 --disable-style W605,W606,E501,E265,W601,E402,E722,E741 --exclude avocado-libs --no-license-check
+    # Cleanup avocado libs
+    - rm -rf avocado-libs
