@@ -2415,6 +2415,16 @@ class DevContainer(object):
                 or not self.has_device(serial_type)):
             return legacy_dev
 
+        # mips didnot support "isa-serial",fallback to "-serial"
+        legacy_cmd = " -serial unix:'%s',server,nowait" % file_name
+        legacy_dev = qdevices.QStringDevice('SER-%s' % serial_id,
+                                            cmdline=legacy_cmd)
+        mips_serial = (serial_type == 'isa-serial'
+                      and 'loongson7a' in params.get("machine_type", ""))
+        if (mips_serial or not self.has_option("chardev")
+                or not self.has_device(serial_type)):
+            return legacy_dev
+
         bus_type = None
         if serial_type.startswith('virt'):
             if '-mmio' in machine:
