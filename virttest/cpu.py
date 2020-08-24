@@ -805,6 +805,24 @@ def get_cpu_vendor(cpu_info="", verbose=True):
     return vendor
 
 
+def get_cpu_model(cpu_info=""):
+    """
+    This function is for mips platform to get cpu model name from /proc/cpuinfo
+    Returns the name of the CPU model
+    """
+    model_re = "model name\s+:([a-zA-Z0-9- ]+)\(([a-zA-Z0-9-]+)\)"
+    if not cpu_info:
+        fd = open("/proc/cpuinfo")
+        cpu_info = fd.read()
+        fd.close()
+    model = re.findall(model_re, cpu_info)
+    if not model:
+        model = 'unknown'
+    else:
+        model = model[-1][-1]
+    return model
+
+
 def get_recognized_cpuid_flags(qemu_binary="/usr/libexec/qemu-kvm"):
     """
     Get qemu recongnized CPUID flags
@@ -905,6 +923,11 @@ def get_host_cpu_models():
     else:
         logging.warn("Can not Get cpu flags from cpuinfo")
 
+    # add support for mips
+    cpu_model = get_cpu_model(cpu_info)
+    if cpu_model:
+        cpu_support_model.append(cpu_model + '-COMP')
+
     return cpu_support_model
 
 
@@ -926,8 +949,10 @@ def extract_qemu_cpu_models(qemu_cpu_help_text):
     x86_pattern_list = "x86\s+\[?([a-zA-Z0-9_-]+)\]?.*\n"
     ppc64_pattern_list = "PowerPC\s+\[?([a-zA-Z0-9_-]+\.?[0-9]?)\]?.*\n"
     s390_pattern_list = "s390\s+\[?([a-zA-Z0-9_-]+)\]?.*\n"
+    # add support for mips
+    mips_pattern_list = "MIPS\s+'([a-zA-Z0-9_-]+)?.*'\n"
 
-    for pattern_list in [x86_pattern_list, ppc64_pattern_list, s390_pattern_list]:
+    for pattern_list in [x86_pattern_list, ppc64_pattern_list, s390_pattern_list, mips_pattern_list]:
         model_list = check_model_list(pattern_list)
         if model_list is not None:
             return model_list
