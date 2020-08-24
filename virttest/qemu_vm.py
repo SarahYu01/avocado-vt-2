@@ -3508,6 +3508,20 @@ class VM(virt_vm.BaseVM):
             else:
                 bridge_type = 'pci-bridge'
             return {'aobject': '%s-0' % bridge_type}
+        # add support for mips loongson7a support
+        if machine_type == "loongson7a" and not pcie:
+            # for legace pic devie(eg. rtl8139, e1000)
+            devices = qcontainer.DevContainer(
+                    self.qemu_binary,
+                    self.name,
+                    self.params.get('strict_mode'),
+                    self.params.get('workaround_qemu_qmp_crash'),
+                    self.params.get('allow_hotplugged_vm'))
+            if devices.has_device('pcie-pci-bridge'):
+                bridge_type = 'pcie-pci-bridge'
+            else:
+                bridge_type = 'pci-bridge'
+            return {'aobject': '%s-0' % bridge_type}
         return {'aobject': params.get('pci_bus', 'pci.0')}
 
     @error_context.context_aware

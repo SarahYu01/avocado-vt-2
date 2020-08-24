@@ -1319,6 +1319,63 @@ class DevContainer(object):
                                                   aobject="virtio-mmio-bus"))
             return devices
 
+        # add support for mips loongson7a machine type
+        def machine_loongson7a(cmd=False):
+            """
+            loongson7a
+            :param cmd: If set uses "-M $cmd" to force this machine type
+            :return: List of added devices (including default buses)
+            """
+            logging.warn('Using loongson7a machine which is not yet fully tested on '
+                         'avocado-vt. False errors might occur.')
+            devices = []
+            bus = (qdevices.QPCIEBus('pcie.0', 'PCIE', root_port_type, 'pci.0'),
+                   qdevices.QStrictCustomBus(None, [['chassis'], [256]], '_PCI_CHASSIS',
+                                             first_port=[1]),
+                   qdevices.QStrictCustomBus(None, [['chassis_nr'], [256]],
+                                             '_PCI_CHASSIS_NR', first_port=[1]),
+                   qdevices.QCPUBus(params.get("cpu_model"), [[""], [0]],
+                                    "vcpu"))
+            devices.append(qdevices.QStringDevice('machine', cmdline=cmd,
+                                                  child_bus=bus,
+                                                  aobject="pci.0"))
+            devices.append(qdevices.QStringDevice('ls7a1000_pcie', {'addr': 0,
+                                                                    'driver': 'ls7a1000_pcie'},
+                                                  parent_bus={'aobject': 'pci.0'}))
+            devices.append(qdevices.QStringDevice('pci-ohci', {'addr': '01.0',
+                                                               'driver': 'pci-ohci'},
+                                                  parent_bus={'aobject': 'pci.0'}))
+            if self.has_option('device') and self.has_option("global"):
+                devices.append(qdevices.QStringDevice('fdc',
+                                                      child_bus=qdevices.QFloppyBus('floppy')))
+            else:
+                devices.append(qdevices.QStringDevice('fdc',
+                                                      child_bus=qdevices.QOldFloppyBus('floppy'))
+                               )
+
+            # add default pcie root port plugging pcie device
+            port_name = '%s-0' % root_port_type
+            port_params = {
+                'type': root_port_type,
+                # reserve slot 0x0 for plugging in  pci bridge
+                'reserved_slots': '0x0'}
+            root_port = self.pcic_by_params(port_name, port_params)
+            if root_port_type == 'pcie-root-port':
+                root_port.set_param('multifunction', 'on')
+            devices.append(root_port)
+
+            # add pci bridge for plugging in legace pci device
+            bridge_name = '%s-0' % pci_bridge_type
+            bridge_parent_bus = {'aobject': root_port.get_qid()}
+            bridge_params = {'type': pci_bridge_type}
+            pci_bridge = self.pcic_by_params(bridge_name,
+                                             bridge_params,
+                                             bridge_parent_bus)
+            pci_bridge.set_param('addr', '0x0')
+            devices.append(pci_bridge)
+
+            return devices
+
         def machine_other(cmd=False):
             """
             isapc or unknown machine type. This type doesn't add any default
@@ -1353,6 +1410,8 @@ class DevContainer(object):
                     cmd = ""
                 if 'q35' in machine_type:   # Q35 + ICH9
                     devices = machine_q35(cmd)
+                elif 'loongson7a' in machine_type:   # loongson7a for mips   
+                    devices = machine_loongson7a(cmd)
                 elif avocado_machine == 'arm64-pci':
                     devices = machine_arm64_pci(cmd)
                 elif avocado_machine == 'arm64-mmio':
