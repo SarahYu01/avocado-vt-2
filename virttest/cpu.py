@@ -820,7 +820,12 @@ def get_cpu_model(cpu_info=""):
         model = 'unknown'
     else:
         model = model[-1][-1]
-    return model
+
+    # Compatible with two cpu model env,return qemu supported one
+    if "B" in model:
+        return model.replace("B", "A")
+    else:
+        return model
 
 
 def get_recognized_cpuid_flags(qemu_binary="/usr/libexec/qemu-kvm"):
