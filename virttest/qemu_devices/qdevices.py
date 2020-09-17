@@ -1263,7 +1263,8 @@ class Memory(QObject):
         backend = params.pop("backend")
         convert_size = utils_misc.normalize_data_size
         args = (params["size"], "B", 1024)
-        params["size"] = int(float(convert_size(*args)))
+        # add round func before int
+        params["size"] = int(round(float(convert_size(*args))))
         if params.get("host-nodes"):
             host_nodes = list(map(int, params["host-nodes"].split()))
             params["host-nodes"] = host_nodes
@@ -1306,7 +1307,8 @@ class Memory(QObject):
                     if dev["host-nodes"].sort() != host_nodes.sort():
                         return False
                 args = (params["size"], "B", 1024)
-                size = int(float(utils_misc.normalize_data_size(*args)))
+                # add round func before int
+                size = int(round(float(utils_misc.normalize_data_size(*args))))
                 if dev["size"] != size:
                     return False
                 dev.pop("size")
