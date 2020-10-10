@@ -2623,8 +2623,12 @@ class DevContainer(object):
             elif driver == 'i82801b11-bridge':  # addr 0x1-0x13
                 bus_length = 20
                 bus_first_port = 1
-            elif driver in ('pcie-root-port', 'ioh3420'):
+            elif driver == 'pcie-root-port':
                 bus_length = 1
+                bus_first_port = 0
+                parent_bus.append({'busid': '_PCI_CHASSIS'})
+            elif driver == 'ioh3420':
+                bus_length = 32
                 bus_first_port = 0
                 parent_bus.append({'busid': '_PCI_CHASSIS'})
             elif driver == 'pcie-pci-bridge':
