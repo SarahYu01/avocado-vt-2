@@ -1966,7 +1966,7 @@ class VM(virt_vm.BaseVM):
                             tapfds = ":".join(tapfd_list[:tapfds_len])
 
                 # Handle the '-net nic' part
-                if params.get("machine_type") != "q35":
+                if params.get("machine_type") not in ["q35", "loongson7a"]:
                     pcie = False
                 else:
                     pcie = nic_model not in ['e1000', 'rtl8139']
