@@ -3853,7 +3853,7 @@ class VM(virt_vm.BaseVM):
         device_add_cmd += nic.get('nic_extra_params', '')
         if 'romfile' in nic:
             device_add_cmd += ",romfile=%s" % nic.romfile
-        if self.params.get('machine_type') != 'q35':
+        if self.params.get('machine_type') not in ['q35', 'loongson7a']:
             pcie = False
         else:
             pcie = nic['nic_model'] not in ['e1000', 'rtl8139']
