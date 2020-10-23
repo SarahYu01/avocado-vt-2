@@ -3317,7 +3317,11 @@ def parse_arp(session=None, timeout=60.0, **dargs):
         if flag == "0x0":
             continue
 
-        ret[mac] = ip
+        if mac in ret:
+            ips = [ret.get(mac), ip]
+            ret[mac] = ips
+        else:
+            ret[mac] = ip
 
     return ret
 
@@ -3347,6 +3351,10 @@ def verify_ip_address_ownership(ip, macs, timeout=60.0, devs=None,
         for mac in macs:
             if ip_map.get(mac) == ip:
                 return True
+            if ip_map.get(mac) is None:
+                for ipv in ip_map.values():
+                    if ip in ipv:
+                        return True
 
         mac_regex = "|".join("(%s)" % mac for mac in macs)
         regex = re.compile(r"\b%s\b.*\b(%s)\b" % (ip, mac_regex), re.I)
