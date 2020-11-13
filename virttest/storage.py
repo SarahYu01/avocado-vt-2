@@ -465,8 +465,8 @@ def retrieve_secrets(image, params):
     # use image instead if image_chain is empty
     # or no backing image available
     image_chain = params.get("image_chain", "")
-    if image not in image_chain:
-        image_chain = image
+    if str(image) not in image_chain:
+        image_chain = str(image)
     for img in image_chain.split():
         img_params = params.object_params(img)
         secret = ImageSecret.image_secret_define_by_params(img, img_params)

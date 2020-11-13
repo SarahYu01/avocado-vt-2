@@ -70,7 +70,7 @@ class Params(IterableUserDict):
         :param obj_name: The name of the object (objects are listed by the
                 objects() method).
         """
-        suffix = "_" + obj_name
+        suffix = "_" + str(obj_name)
         self.lock.acquire()
         new_dict = self.copy()
         self.lock.release()
