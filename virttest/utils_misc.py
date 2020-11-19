@@ -2880,9 +2880,9 @@ def get_image_info(image_file):
                     image_info_dict['vsize'] = int(vsize)
                 elif line.find("disk size") != -1:
                     dsize = line.split(':')[-1].strip()
-                    image_info_dict['dsize'] = int(float(
+                    image_info_dict['dsize'] = int(round(float(
                         normalize_data_size(dsize, order_magnitude="B",
-                                            factor=1024)))
+                                            factor=1024))))
                 elif line.find("cluster_size") != -1:
                     csize = line.split(':')[-1].strip()
                     image_info_dict['csize'] = int(csize)
