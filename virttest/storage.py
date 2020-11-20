@@ -70,7 +70,7 @@ def file_exists(params, filename_path):
 
     :return: True if image file exists else False
     """
-    if params.get_boolean("enable_gluster"):
+    if params.get("enable_gluster") == "yes":
         return gluster.file_exists(params, filename_path)
 
     if params.get("enable_ceph") == "yes":
