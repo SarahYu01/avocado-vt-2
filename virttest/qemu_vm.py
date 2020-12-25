@@ -4919,6 +4919,7 @@ class VM(virt_vm.BaseVM):
         if self.check_capability(Flags.BLOCKDEV):
             qdev = self.devices.get_qdev_by_drive(device)
             self.monitor.blockdev_open_tray(qdev, force)
+            time.sleep(2)
             return self.monitor.blockdev_remove_medium(qdev)
         else:
             return self.monitor.eject_cdrom(device, force)
