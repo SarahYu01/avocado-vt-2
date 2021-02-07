@@ -807,7 +807,7 @@ def get_cpu_vendor(cpu_info="", verbose=True):
 
 def get_cpu_model(cpu_info=""):
     """
-    This function is for mips platform to get cpu model name from /proc/cpuinfo
+    This function is for mips64 and loongarch64 platform to get cpu model name from /proc/cpuinfo
     Returns the name of the CPU model
     """
     model_re = "model name\s+:([a-zA-Z0-9- ]+)\(([a-zA-Z0-9-]+)\)"
@@ -821,7 +821,7 @@ def get_cpu_model(cpu_info=""):
     else:
         model = model[-1][-1]
 
-    # Compatible with two cpu model env,return qemu supported one
+    # Compatible with two cpu model on mips64 platform,return qemu supported one
     if "B" in model:
         return model.replace("B", "A")
     else:
@@ -928,11 +928,16 @@ def get_host_cpu_models():
     else:
         logging.warn("Can not Get cpu flags from cpuinfo")
 
-    # add support for mips
+    # Add support for mips64 and loongarch64 to get the cpu model name
+    # they don't have cpu flags and vendor info
     cpu_model = get_cpu_model(cpu_info)
     if cpu_model:
-        cpu_support_model.append(cpu_model + '-COMP')
-
+        if ARCH is 'mips64':
+            cpu_support_model.append(cpu_model + '-COMP')
+        if cpu_model is 'Loongson-3A5000' and ARCH is 'loongarch64':
+            cpu_support_model.append('ls3a5k')
+    else:
+        logging.warn("Can not Get cpu model from cpuinfo")
     return cpu_support_model
 
 
@@ -954,10 +959,13 @@ def extract_qemu_cpu_models(qemu_cpu_help_text):
     x86_pattern_list = "x86\s+\[?([a-zA-Z0-9_-]+)\]?.*\n"
     ppc64_pattern_list = "PowerPC\s+\[?([a-zA-Z0-9_-]+\.?[0-9]?)\]?.*\n"
     s390_pattern_list = "s390\s+\[?([a-zA-Z0-9_-]+)\]?.*\n"
-    # add support for mips
+    # add support for mips64
     mips_pattern_list = "MIPS\s+'([a-zA-Z0-9_-]+)?.*'\n"
+    # add support for loongarch64
+    loongarch_pattern_list = "LOONGARCH\s+'([a-zA-Z0-9_-]+)?.*'\n"
 
-    for pattern_list in [x86_pattern_list, ppc64_pattern_list, s390_pattern_list, mips_pattern_list]:
+    for pattern_list in [x86_pattern_list, ppc64_pattern_list, s390_pattern_list, 
+                         mips_pattern_list, loongarch_pattern_list]:
         model_list = check_model_list(pattern_list)
         if model_list is not None:
             return model_list
