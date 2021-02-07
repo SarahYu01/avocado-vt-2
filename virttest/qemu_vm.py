@@ -1966,7 +1966,7 @@ class VM(virt_vm.BaseVM):
                             tapfds = ":".join(tapfd_list[:tapfds_len])
 
                 # Handle the '-net nic' part
-                if params.get("machine_type") not in ["q35", "loongson7a"]:
+                if params.get("machine_type") not in ["q35", "loongson7a", "ls3a5k"]:
                     pcie = False
                 else:
                     pcie = nic_model not in ['e1000', 'rtl8139']
@@ -3508,8 +3508,22 @@ class VM(virt_vm.BaseVM):
             else:
                 bridge_type = 'pci-bridge'
             return {'aobject': '%s-0' % bridge_type}
-        # add support for mips loongson7a support
+        # add support for mips64 loongson7a support
         if machine_type == "loongson7a" and not pcie:
+            # for legace pic devie(eg. rtl8139, e1000)
+            devices = qcontainer.DevContainer(
+                    self.qemu_binary,
+                    self.name,
+                    self.params.get('strict_mode'),
+                    self.params.get('workaround_qemu_qmp_crash'),
+                    self.params.get('allow_hotplugged_vm'))
+            if devices.has_device('pcie-pci-bridge'):
+                bridge_type = 'pcie-pci-bridge'
+            else:
+                bridge_type = 'pci-bridge'
+            return {'aobject': '%s-0' % bridge_type}
+        # add support for loongarch64 ls3a5k support
+        if machine_type == "ls3a5k" and not pcie:
             # for legace pic devie(eg. rtl8139, e1000)
             devices = qcontainer.DevContainer(
                     self.qemu_binary,
@@ -3853,7 +3867,7 @@ class VM(virt_vm.BaseVM):
         device_add_cmd += nic.get('nic_extra_params', '')
         if 'romfile' in nic:
             device_add_cmd += ",romfile=%s" % nic.romfile
-        if self.params.get('machine_type') not in ['q35', 'loongson7a']:
+        if self.params.get('machine_type') not in ['q35', 'loongson7a', 'ls3a5k']:
             pcie = False
         else:
             pcie = nic['nic_model'] not in ['e1000', 'rtl8139']
