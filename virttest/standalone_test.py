@@ -40,11 +40,15 @@ def find_default_qemu_paths(options_qemu=None, options_dst_qemu=None):
                                options_qemu)
         qemu_bin_path = options_qemu
     else:
-        try:
-            qemu_bin_path = utils_path.find_command('qemu-kvm')
-        except utils_path.CmdNotFoundError:
-            # qemu_bin_path = utils_path.find_command('kvm')
-            qemu_bin_path = utils_path.find_command('qemu-system-mips64el')
+        qemu_command = ['qemu-kvm', 'kvm', 'qemu-system-mips64el', 'qemu-system-loongarch64']
+        for qemu in qemu_command:
+            try:
+                qemu_bin_path = utils_path.find_command(qemu)
+                if os.path.isfile(qemu_bin_path):
+                    break
+            except utils_path.CmdNotFoundError:
+                if qemu == qemu_command[-1]:
+                    raise
 
     if options_dst_qemu is not None:
         if not os.path.isfile(options_dst_qemu):
