@@ -48,7 +48,7 @@ def find_default_qemu_paths(options_qemu=None, options_dst_qemu=None):
                     break
             except utils_path.CmdNotFoundError:
                 if qemu == qemu_command[-1]:
-                    raise
+                    raise RuntimeError("Failed to find valid qemu path")
 
     if options_dst_qemu is not None:
         if not os.path.isfile(options_dst_qemu):

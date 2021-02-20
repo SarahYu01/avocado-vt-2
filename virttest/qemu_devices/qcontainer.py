@@ -2463,24 +2463,24 @@ class DevContainer(object):
         serial_type = params['serial_type']
         machine = params.get('machine_type')
 
+        legacy_cmd = " -serial unix:'%s',server,nowait" % file_name
+        legacy_dev = qdevices.QStringDevice('SER-%s' % serial_id,
+                                            cmdline=legacy_cmd)
+
         # Arm lists "isa-serial" as supported but can't use it,
         # fallback to "-serial"
-        legacy_cmd = " -serial unix:'%s',server,nowait" % file_name
-        legacy_dev = qdevices.QStringDevice('SER-%s' % serial_id,
-                                            cmdline=legacy_cmd)
         arm_serial = (serial_type == 'isa-serial'
                       and 'arm' in params.get("machine_type", ""))
-        if (arm_serial or not self.has_option("chardev")
-                or not self.has_device(serial_type)):
-            return legacy_dev
 
         # mips didnot support "isa-serial",fallback to "-serial"
-        legacy_cmd = " -serial unix:'%s',server,nowait" % file_name
-        legacy_dev = qdevices.QStringDevice('SER-%s' % serial_id,
-                                            cmdline=legacy_cmd)
         mips_serial = (serial_type == 'isa-serial'
                       and 'loongson7a' in params.get("machine_type", ""))
-        if (mips_serial or not self.has_option("chardev")
+
+        # loongarch didnot support "isa-serial",fallback to "-serial"
+        loongarch_serial = (serial_type == 'isa-serial'
+                      and 'ls3a5k' in params.get("machine_type", ""))
+
+        if (arm_serial or mips_serial or loongarch_serial or not self.has_option("chardev")
                 or not self.has_device(serial_type)):
             return legacy_dev
 
