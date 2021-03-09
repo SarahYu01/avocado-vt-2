@@ -810,7 +810,7 @@ def get_cpu_model(cpu_info=""):
     This function is for mips64 and loongarch64 platform to get cpu model name from /proc/cpuinfo
     Returns the name of the CPU model
     """
-    model_re = "model name\s+:([a-zA-Z0-9- ]+)\(([a-zA-Z0-9-]+)\)"
+    model_re = "model name\s+:([a-zA-Z0-9- ]+)[\(]*([a-zA-Z0-9-]*)[\)]*"
     if not cpu_info:
         fd = open("/proc/cpuinfo")
         cpu_info = fd.read()
@@ -819,13 +819,17 @@ def get_cpu_model(cpu_info=""):
     if not model:
         model = 'unknown'
     else:
-        model = model[-1][-1]
-
-    # Compatible with two cpu model on mips64 platform,return qemu supported one
-    if "B" in model:
-        return model.replace("B", "A")
-    else:
-        return model
+        if ARCH in ('mips64'):
+            model = model[-1][-1]
+            # Compatible with two cpu model on mips64 platform,return qemu supported one
+            if "B" in model:
+                return model.replace("B", "A")
+            else:
+                return model
+        if ARCH in ('loongarch64'):
+            model = model[-1][0]
+            model = model.strip()
+            return model
 
 
 def get_recognized_cpuid_flags(qemu_binary="/usr/libexec/qemu-kvm"):
@@ -932,9 +936,9 @@ def get_host_cpu_models():
     # they don't have cpu flags and vendor info
     cpu_model = get_cpu_model(cpu_info)
     if cpu_model:
-        if ARCH is 'mips64':
+        if ARCH in ('mips64'):
             cpu_support_model.append(cpu_model + '-COMP')
-        if cpu_model is 'Loongson-3A5000' and ARCH is 'loongarch64':
+        if ARCH in ('loongarch64') and cpu_model == 'Loongson-3A5000':
             cpu_support_model.append('ls3a5k')
     else:
         logging.warn("Can not Get cpu model from cpuinfo")
