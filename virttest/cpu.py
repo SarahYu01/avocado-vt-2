@@ -938,8 +938,8 @@ def get_host_cpu_models():
     if cpu_model:
         if ARCH in ('mips64'):
             cpu_support_model.append(cpu_model + '-COMP')
-        if ARCH in ('loongarch64') and cpu_model == 'Loongson-3A5000':
-            cpu_support_model.append('ls3a5k')
+        if ARCH in ('loongarch64'):
+            cpu_support_model.append(cpu_model)
     else:
         logging.warn("Can not Get cpu model from cpuinfo")
     return cpu_support_model
