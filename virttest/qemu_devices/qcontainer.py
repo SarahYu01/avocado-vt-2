@@ -2155,7 +2155,8 @@ class DevContainer(object):
                 if Flags.BLOCKDEV in self.caps:
                     if key == 'discard':
                         value = re.sub('on', 'unmap', re.sub('off', 'ignore', value))
-                    devices[-2].set_param(key, value)
+                    if key != 'cache-size':
+                        devices[-2].set_param(key, value)
                 devices[-1].set_param(key, value)
         if not use_device:
             if fmt and fmt.startswith('scsi-'):
