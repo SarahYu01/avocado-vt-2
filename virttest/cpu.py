@@ -829,7 +829,14 @@ def get_cpu_model(cpu_info=""):
         if ARCH in ('loongarch64'):
             model = model[-1][0]
             model = model.strip()
-            return model
+            # Compatible with two cpu model on mips64 platform,return qemu supported one
+            if "B" in model:
+                return model.replace("B", "A")
+            elif "C" in model and "L" in model:
+                model = model.replace("5000L", "5000")
+                return model.replace("C", "A")
+            else:
+                return model
 
 
 def get_recognized_cpuid_flags(qemu_binary="/usr/libexec/qemu-kvm"):
