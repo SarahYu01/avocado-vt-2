@@ -2249,6 +2249,8 @@ class DevContainer(object):
         devices[-1].set_param('bootindex', bootindex)
         if Flags.BLOCKDEV in self.caps:
             if isinstance(devices[-3], qdevices.QBlockdevProtocolHostDevice):
+                if cache is None:
+                    cache = 'none'
                 self.cache_map[cache]['write-cache'] = None
             write_cache = None if not cache else self.cache_map[cache]['write-cache']
             devices[-1].set_param('write-cache', write_cache)
